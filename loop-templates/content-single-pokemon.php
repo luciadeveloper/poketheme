@@ -14,7 +14,7 @@ $descripion           = get_post_meta( get_the_ID(), 'descripion', true );
 $primary_type         = get_post_meta( get_the_ID(), 'primary_type', true );
 $secondary_type       = get_post_meta( get_the_ID(), 'secondary_type', true );
 $pokedex_old_version  = get_post_meta( get_the_ID(), 'pokedex_old_version', true );
-$attacs               = get_post_meta( get_the_ID(), 'attacs', true );
+$attacks               = get_post_meta( get_the_ID(), 'attacks', true );
 $pokemon_id           = get_post_meta( get_the_ID(), 'pokemon_id', true );
 
 ?>
@@ -44,12 +44,12 @@ $pokemon_id           = get_post_meta( get_the_ID(), 'pokemon_id', true );
 			</li>
 			
 			<li>
-				<p><?php esc_html_e( 'Attacs:', 'understrap' ); ?> </p>
+				<p><?php esc_html_e( 'Attacks:', 'understrap' ); ?> </p>
 				<table>
-					<th><?php esc_html_e( 'Attac name', 'understrap' ); ?> </th>
-					<th><?php esc_html_e( 'Attac description', 'understrap' ); ?> </th>
+					<th><?php esc_html_e( 'Attack name', 'understrap' ); ?> </th>
+					<th><?php esc_html_e( 'Attack description', 'understrap' ); ?> </th>
 						<?php
-						foreach($attacs as $row) {
+						foreach($attacks as $row) {
 							?>
 								<tr>
 								<td><?php echo ($row["name"]); ?></td>
