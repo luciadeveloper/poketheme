@@ -64,6 +64,13 @@ Notes:
     - Check the custom fields are enabled on your site. Go to Pokemon post, ..., preferences, panels, Custom Fields.
     **image**
 
+== Screenshots ==
+
+- Pokemon post
+ **image**
+
+- Pokemon post editor
+ **image**
 
 == Changelog ==
 
