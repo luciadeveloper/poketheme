@@ -6,6 +6,7 @@
  */
 
 namespace Pokemon;
+
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
@@ -53,8 +54,7 @@ class Pokemon {
        
     }
 
-  
-     /**
+    /**
      * Register post type
      */
     public function register_cpt() {
@@ -121,25 +121,25 @@ class Pokemon {
        
     }
 
-     /**
+    /**
      * Create one pokemon with the data from the API
      */
     public function create_one_pokemon( $pokemon_data ) {
     
-        $name         = $pokemon_data->name;
-        $pokemon_id   = $pokemon_data->id; //same as $rand
-        $weight       = $pokemon_data->weight;
-        $primary_type = $pokemon_data->types[0]->type->name;
+        $name           = $pokemon_data->name;
+        $pokemon_id     = $pokemon_data->id; //same as $rand
+        $weight         = $pokemon_data->weight;
+        $primary_type   = $pokemon_data->types[0]->type->name;
  
-        $secondary_type = $pokemon_data->types[1]->type->name ?? '';
+        $secondary_type = $pokemon_data->types[1]->type->name ?? 'no data';
         $game_indices   = $pokemon_data->game_indices; 
        
         $game_first_indice = [
-            'number' => reset( $game_indices )->game_index ?? '',
-            'name'   => reset( $game_indices )->version->name ?? '',
+            'number' => reset( $game_indices )->game_index ?? 'no data',
+            'name'   => reset( $game_indices )->version->name ?? 'no data',
         ];
 
-        $game_last_indice = end( $game_indices )->game_index ?? '';
+        $game_last_indice = end( $game_indices )->game_index ?? 'no data';
 
         //attacks
         $moves = $this->get_pokemon_moves( $pokemon_data->moves );
@@ -154,11 +154,9 @@ class Pokemon {
 
         // Insert the post into the database
         $postId = wp_insert_post( $my_post );
-       
-        add_post_meta( 
-            $postId, 
-            'pokemon_id', 
-            $pokemon_id, true );
+        
+        //(this could be optimized with a foreach or take it to another function. Fields should be in new lines but I found it too big. )
+        add_post_meta( $postId, 'pokemon_id', $pokemon_id, true );
         add_post_meta( $postId, 'description', '', true );
         add_post_meta( $postId, 'primary_type', $primary_type, true );
         add_post_meta( $postId, 'secondary_type', $secondary_type, true );
@@ -166,11 +164,11 @@ class Pokemon {
         add_post_meta( $postId, 'pokedex_old_version', $game_first_indice['number'], true );
         add_post_meta( $postId, 'pokedex_last_version', $game_last_indice, true );
         add_post_meta( $postId, 'pokedex_last_version_and_name', $game_first_indice, true );
-        add_post_meta( $postId, 'attacs', $moves );
-        
+        add_post_meta( $postId, 'attacks', $moves );
+    
     }
 
-     /**
+    /**
      * Returns a list with info of all the movements
      */
     public function get_pokemon_moves( $pokemon_moves ) {
@@ -196,7 +194,7 @@ class Pokemon {
 
 
     /**
-     * Register the URL to call getRandomPokemon function
+     * Register the URL to call get_random pokemon function
      * http://poketest.local/wp-json/add-pokemon/random/ 
      */
     public function register_url_add_pokemon(){
@@ -214,7 +212,7 @@ class Pokemon {
 
      
     /**
-     * Register the URL to call getRandomPokemon function
+     * Register the URL to call get_random_pokemon function
      * http://poketest.local/wp-json/get-pokemon/random/ 
      */
     public function register_url_get_pokemon(){
@@ -232,7 +230,7 @@ class Pokemon {
 
     
 
-     /**
+    /**
      * Register the URL to call list pokemons by pokedex function
      * http://poketest.local/wp-json/list-pokemons/bypokedex
      */
@@ -285,11 +283,12 @@ class Pokemon {
 
     
     /**
-     * add Random pokemon to DB
+     * add one pokemon to DB
      */
     function add_random_pokemon() {
 
         $this->create_pokemons(1);
+
     }
 
 
@@ -324,7 +323,7 @@ class Pokemon {
 
 
      /**
-     * Register the URL to call showPokemon function
+     * Register the URL to call show_pokemon function
      * * http://poketest.local/wp-json/wp/v2/pokemon/{post id}_fields=metadata
      * http://poketest.local/wp-json/wp/v2/pokemon/2226?_fields=metadata
      */
@@ -339,7 +338,29 @@ class Pokemon {
             ));      
     }
 
+    /**
+     * Gets the pokedex number to be displayed in the frontend by an AJAX call
+     */
+    public function get_pokedex_number() {
+       
+        $post_id = $_REQUEST['message_id'];
+        
+        $pokedex = get_post_meta( $post_id, 'pokedex_last_version_and_name', true );
+      
+        wp_send_json_success(
+            array( 
+                'pokedex_number' => $pokedex['number'],
+                'pokedex_name'   => $pokedex['name'], 
+            ), 200 );
+        
+        return $pokedex['number'];
 
+    }
+
+
+    /**
+     * Calls the Ajax function and retreives the data
+     */
     public function pokemon_data( $endpoint ) {
         
         $data = $this->ajax_call_pokemon_data( $endpoint );
@@ -347,7 +368,9 @@ class Pokemon {
         return( $data );
     }
 
-    
+    /**
+     * Makes an Ajax call with a given API endpoint
+     */
     public function ajax_call_pokemon_data( $api ) {  
 
         $request = wp_remote_get( $api);
@@ -368,26 +391,4 @@ class Pokemon {
         }         
     }
 
-    /**
-     * Gets the pokedex number to be display in the frontend by an AJAX call
-     */
-    public function get_pokedex_number() {
-       
-        $post_id = $_REQUEST['message_id'];
-        
-        $pokedex = get_post_meta( $post_id, 'pokedex_last_version_and_name', true );
-      
-        wp_send_json_success(
-            array( 
-                'pokedex_number' => $pokedex['number'],
-                'pokedex_name'   => $pokedex['name'], 
-            ), 200 );
-        
-        return $pokedex['number'];
-
-    }
-
 }
-
-
-
