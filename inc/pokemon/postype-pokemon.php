@@ -31,12 +31,12 @@ class Pokemon {
        
 
     public function __construct() {
+        
         // Register the post type
         add_action( 'init', array( $this, 'register_cpt' ));
        
         // create initial pokemons when the theme is enabled
         add_action( 'after_switch_theme', array( $this, 'create_pokemons' ) );
-        //$this->create_pokemons(10);  
         
         //ajax endpoints
         add_action( 'wp_ajax_pokemon_data', array( $this,'pokemon_data' ) );
@@ -88,6 +88,7 @@ class Pokemon {
             'hierarchical'          => false,
             'menu_position'         => 0,
             'supports'              => array( 'title', 'editor', 'thumbnail', 'custom-fields'),
+            'menu_icon'             => 'dashicons-pets',
         );
         
         register_post_type( $this->type, $args );
@@ -187,11 +188,14 @@ class Pokemon {
         foreach ( $moves as $move ) {
 
             $movement                = array();
-            $movement['name']        = $move->move->name;
-            $url                     = $move->move->url;
-            $description             = $this->pokemon_data($url);
-            $movement['description'] = $description->type->name;
-            $moves_list[]            = $movement;
+
+            $movement['name']        = $move->move->name; //save movement name
+            
+            $url                     = $move->move->url; //gets the url of the endpoint to get movement info
+            $description             = $this->pokemon_data($url); //retreives the movement info
+            $movement['description'] = $description->type->name;  //save movement description
+            
+            $moves_list[]            = $movement; //saves all of this movement data needed in the final array
             
         }
        
@@ -213,7 +217,7 @@ class Pokemon {
                 'callback'            => array( $this,'add_random_pokemon' ),
                 'permission_callback' => function () {
                     return true;
-                    //return current_user_can( 'edit_posts' ); //this is not working not sure yet why
+                    //return current_user_can( 'edit_posts' ); //this is not working 
                 }
             ) );
     }
@@ -230,13 +234,11 @@ class Pokemon {
                 'callback' => array( $this,'get_random_pokemon' ),
                 'permission_callback' => function () {
                     return true;
-                    //return current_user_can( 'edit_others_posts' );
+                    //return current_user_can( 'edit_posts' );//this is not working 
                 }
             ) );
     }
 
-
-    
 
     /**
      * Register the URL to call list pokemons by pokedex function
@@ -249,7 +251,7 @@ class Pokemon {
                 'callback' => array( $this,'list_pokemons' ),
                 'permission_callback' => function () {
                     return true;
-                    //return current_user_can( 'edit_others_posts' );
+                    //return current_user_can( 'edit_posts' ); //this is not working 
                 }
             ) );
     }
@@ -282,7 +284,7 @@ class Pokemon {
          
             $the_query->the_post();
            
-            wp_redirect( get_permalink() );
+            wp_redirect( get_permalink() ); //redirects the page to the pokemon post page
            
             wp_reset_postdata();
 
@@ -340,6 +342,7 @@ class Pokemon {
             array(
                 'get_callback' => function ( $data ) {
                     $post_meta = get_post_meta( $data['id'], '', '' );
+                    
                     return $post_meta;
                 }, 
             ));      
@@ -393,6 +396,7 @@ class Pokemon {
 
             $body = wp_remote_retrieve_body( $request ); 
             $data = json_decode( $body ); 
+            
             return( $data );
 
         }         
