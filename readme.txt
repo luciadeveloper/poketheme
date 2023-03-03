@@ -72,8 +72,9 @@ Notes:
 == Next ==
 
 - Pokemon post properties Primary and Secondary type of Pokemon could be a category.
-- Fix: When creating 3 new pokemons, I assumed they are different. There is a small chance of getting the same pokemon twice, as I am using the PHP function rand(). SOLVED
+- When creating 3 new pokemons, I assumed they are different. There is a small chance of getting the same pokemon twice, as I am using the PHP function rand(). SOLVED
 - CPT template styles. The Attacs table needs a way to make it shorter. A fixed height with a scroll inside for example. (max-height: 200px; overflow: scroll; display: block;)
 - Pokemons archive page filter
 - When creating a new Pokemon post, check there is no other Pokemon post with the same info (could be only a check on the name) SOLVED
 - This functionality could be in a plugin so it is easier to add to any WordPress website. 
+- Fix: The permision callback in register_rest_route does not work properly in this code. 
