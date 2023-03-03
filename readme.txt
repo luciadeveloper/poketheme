@@ -62,15 +62,21 @@ Notes:
     - Download the theme and add it to your themes folder /wp-content/themes
     - Activate it in the dashboard or use WP-CLI. 
     - Check the custom fields are enabled on your site. Go to Pokemon post, ..., preferences, panels, Custom Fields.
-    **image**
+    
+    ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/custom-fields.png)
+
 
 == Screenshots ==
 
 - Pokemon post
- **image**
+ 
+ ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/pokemon-post.png)
+
 
 - Pokemon post editor
- **image**
+ 
+ ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/pokemon-post-editor.png)
+
 
 == Changelog ==
 
