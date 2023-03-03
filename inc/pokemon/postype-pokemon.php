@@ -30,12 +30,11 @@ class Pokemon {
 
     public function __construct() {
         // Register the post type
-        add_action( 'init', array( $this, 'registerCPT' ));
+        add_action( 'init', array( $this, 'register_cpt' ));
        
         // create initial pokemons when the theme is enabled
-        add_action( 'after_switch_theme', array( $this, 'createPokemons' ) );
-       // $this->createPokemons(1);  
-        
+        add_action( 'after_switch_theme', array( $this, 'create_pokemons' ) );
+        $this->create_pokemons(1);  
         
         //ajax endpoints
         add_action( 'wp_ajax_pokemon_data', array( $this,'pokemon_data' ) );
@@ -54,11 +53,10 @@ class Pokemon {
     }
 
   
-
      /**
      * Register post type
      */
-    public function registerCPT() {
+    public function register_cpt() {
         $labels = array(
             'name'                  => $this->name,
             'singular_name'         => $this->singular_name,
@@ -98,7 +96,7 @@ class Pokemon {
      /**
      * Create new pokemons 
      */
-    public function createPokemons( $n = 3) {
+    public function create_pokemons( $n = 3) {
     
         $data  =  $this->pokemon_data( $this->api_endpoint );
         $count =  $data->count;
@@ -110,7 +108,7 @@ class Pokemon {
      
             if( !is_null( $pokemon_data ) ) {
 
-                $this->createOnePokemon( $pokemon_data );
+                $this->create_one_pokemon( $pokemon_data );
               
             } 
             //if there was no pokemon retreived from the API, give it another try
@@ -125,26 +123,25 @@ class Pokemon {
      /**
      * Create one pokemon with the data from the API
      */
-    public function createOnePokemon( $pokemon_data ) {
+    public function create_one_pokemon( $pokemon_data ) {
     
         $name         = $pokemon_data->name;
         $pokemon_id   = $pokemon_data->id; //same as $rand
         $weight       = $pokemon_data->weight;
         $primary_type = $pokemon_data->types[0]->type->name;
  
-        if ( count( $pokemon_data->types ) > 1 ) {
-            $secondary_type = $pokemon_data->types[1]->type->name;
-        }
-        
-        $game_indices = $pokemon_data->game_indices; //can come empty
+        $secondary_type = $pokemon_data->types[1]->type->name ?? '';
+        $game_indices   = $pokemon_data->game_indices; 
        
-        if(!empty( $game_indices )) {
-            $game_first_indice['number'] = reset( $game_indices )->game_index;
-            $game_first_indice['name']   = reset( $game_indices )->version->name;  
-            $game_last_indice            = end( $game_indices )->game_index;
-        }
+        $game_first_indice = [
+            'number' => reset( $game_indices )->game_index ?? '',
+            'name'   => reset( $game_indices )->version->name ?? '',
+        ];
+
+        $game_last_indice = end( $game_indices )->game_index ?? '';
+
         //attacks
-        $moves = $this->getPokemonMoves( $pokemon_data->moves );
+        $moves = $this->get_pokemon_moves( $pokemon_data->moves );
 
         //basic post atributes
         $my_post = array(
@@ -156,33 +153,26 @@ class Pokemon {
 
         // Insert the post into the database
         $postId = wp_insert_post( $my_post );
-        
+       
         add_post_meta( $postId, 'pokemon_id', $pokemon_id, true );
         add_post_meta( $postId, 'description', '', true );
         add_post_meta( $postId, 'primary_type', $primary_type, true );
-        add_post_meta( $postId, 'secondary_type', '' , true );
+        add_post_meta( $postId, 'secondary_type', $secondary_type, true );
         add_post_meta( $postId, 'weight', $weight, true );
-       
-        if(!empty( $game_indices )) {
-            add_post_meta( $postId, 'pokedex_old_version', $game_first_indice['number'] , true );
-            add_post_meta( $postId, 'pokedex_last_version', $game_last_indice, true );
-            add_post_meta( $postId, 'pokedex_last_version_and_name', $game_first_indice, true );
-        }
-
+        add_post_meta( $postId, 'pokedex_old_version', $game_first_indice['number'], true );
+        add_post_meta( $postId, 'pokedex_last_version', $game_last_indice, true );
+        add_post_meta( $postId, 'pokedex_last_version_and_name', $game_first_indice, true );
         add_post_meta( $postId, 'attacs', $moves );
         
-        if (( count( $pokemon_data->types )>1 ) ) {
-            add_post_meta( $postId, 'secondary_type', $secondary_type, true );
-        } 
     }
 
      /**
      * Returns a list with info of all the movements
      */
-    public function getPokemonMoves( $pokemon_moves ) {
+    public function get_pokemon_moves( $pokemon_moves ) {
        
-        $moves = $pokemon_moves;
-        $moves_list= array();
+        $moves      = $pokemon_moves;
+        $moves_list = array();
        
         foreach ( $moves as $move ) {
 
@@ -207,14 +197,15 @@ class Pokemon {
      */
     public function register_url_add_pokemon(){
         
-        register_rest_route( 'add-pokemon/', 'random/', array(
-            'methods'             => 'GET',
-            'callback'            => array( $this,'addRandomPokemon' ),
-            'permission_callback' => function () {
-                return true;
-                //return current_user_can( 'edit_posts' ); //this is not working not sure yet why
-            }
-        ) );
+        register_rest_route( 'add-pokemon/', 'random/', 
+            array(
+                'methods'             => 'GET',
+                'callback'            => array( $this,'add_random_pokemon' ),
+                'permission_callback' => function () {
+                    return true;
+                    //return current_user_can( 'edit_posts' ); //this is not working not sure yet why
+                }
+            ) );
     }
 
      
@@ -223,14 +214,15 @@ class Pokemon {
      * http://poketest.local/wp-json/get-pokemon/random/ 
      */
     public function register_url_get_pokemon(){
-        register_rest_route( 'get-pokemon/', 'random/', array(
-            'methods'  => 'GET',
-            'callback' => array( $this,'getRandomPokemon' ),
-            'permission_callback' => function () {
-                return true;
-                //return current_user_can( 'edit_others_posts' );
-            }
-        ) );
+        register_rest_route( 'get-pokemon/', 'random/', 
+            array(
+                'methods'  => 'GET',
+                'callback' => array( $this,'get_random_pokemon' ),
+                'permission_callback' => function () {
+                    return true;
+                    //return current_user_can( 'edit_others_posts' );
+                }
+            ) );
     }
 
 
@@ -241,20 +233,21 @@ class Pokemon {
      * http://poketest.local/wp-json/list-pokemons/bypokedex
      */
     public function register_url_list_pokemons_by_pokedex(){
-        register_rest_route( 'list-pokemons/', 'bypokedex/', array(
-            'methods'  => 'GET',
-            'callback' => array( $this,'listPokemons' ),
-            'permission_callback' => function () {
-                return true;
-                //return current_user_can( 'edit_others_posts' );
-            }
-        ) );
+        register_rest_route( 'list-pokemons/', 'bypokedex/', 
+            array(
+                'methods'  => 'GET',
+                'callback' => array( $this,'list_pokemons' ),
+                'permission_callback' => function () {
+                    return true;
+                    //return current_user_can( 'edit_others_posts' );
+                }
+            ) );
     }
 
     /**
      *  list pokemosn by pokedex function
      */
-    function listPokemons() {
+    function list_pokemons() {
        
         $args = array(
             'post_type'      => $this->type,
@@ -272,7 +265,9 @@ class Pokemon {
             while ( $the_query->have_posts() ) {
               
                 $the_query->the_post();
+
                 the_title();
+
                 echo "->";
                 echo get_post_meta( get_the_ID() , 'pokedex_last_version', true );
                 echo "  ";
@@ -288,14 +283,16 @@ class Pokemon {
     /**
      * add Random pokemon to DB
      */
-    function addRandomPokemon() {
-        $this->createPokemons(1);
+    function add_random_pokemon() {
+
+        $this->create_pokemons(1);
     }
+
 
     /**
      * get Random pokemon form DB and redirects to its URL
      */
-    function getRandomPokemon() {
+    function get_random_pokemon() {
       
         $args = array(
             'post_type'      => $this->type,
@@ -308,7 +305,9 @@ class Pokemon {
         if ( $the_query->have_posts() ) {
          
             $the_query->the_post();
-            wp_redirect(get_permalink());
+           
+            wp_redirect( get_permalink() );
+           
             wp_reset_postdata();
 
         } else {
@@ -327,14 +326,13 @@ class Pokemon {
      */
     public function register_url_show_pokemon(){
         
-        register_rest_field( 'pokemon', 'metadata', array(
-            'get_callback' => function ( $data ) {
-                $post_meta = get_post_meta( $data['id'], '', '' );
-                return $post_meta;
-            }, 
-        ));
-
-            
+        register_rest_field( 'pokemon', 'metadata', 
+            array(
+                'get_callback' => function ( $data ) {
+                    $post_meta = get_post_meta( $data['id'], '', '' );
+                    return $post_meta;
+                }, 
+            ));      
     }
 
 
@@ -347,17 +345,22 @@ class Pokemon {
 
     
     public function ajax_call_pokemon_data( $api ) {  
+
         $request = wp_remote_get( $api);
     
         if ( is_wp_error( $request )) {
+
             $error_message = $response->get_error_message();
             echo $error_message;
+
         }
     
         if( !empty( $request ) ) {
+
             $body = wp_remote_retrieve_body( $request ); 
             $data = json_decode( $body ); 
             return( $data );
+
         }         
     }
 
@@ -365,14 +368,16 @@ class Pokemon {
      * Gets the pokedex number to be display in the frontend by an AJAX call
      */
     public function get_pokedex_number() {
+       
         $post_id = $_REQUEST['message_id'];
         
         $pokedex = get_post_meta( $post_id, 'pokedex_last_version_and_name', true );
       
-        wp_send_json_success(array( 
-            'pokedex_number' => $pokedex['number'],
-            'pokedex_name'   => $pokedex['name'], 
-        ), 200 );
+        wp_send_json_success(
+            array( 
+                'pokedex_number' => $pokedex['number'],
+                'pokedex_name'   => $pokedex['name'], 
+            ), 200 );
         
         return $pokedex['number'];
 
