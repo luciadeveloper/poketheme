@@ -14,12 +14,14 @@ Contributors: luciadeveloper (Lucia Sanchez Fraile)
 
 Tags: API, REST API, Custom post type, Meta fields, Tests
 
+
 == Description ==
 
 The code added to the starter theme Understrap defines a custom post type for Pokémon called Pokemon. 
 It includes methods for creating, displaying, and managing Pokémon posts, and uses the PokeAPI to fetch data for Pokémon and add it as metadata to the posts. 
 
 This code also enables some API endpoints to add or get Pokemons and to retreive the post information stored in the metadata fields in the DB. 
+
 
 
  == The functionality added to Understrap theme: ==
@@ -58,11 +60,13 @@ Everything has been added in poketheme/inc/pokemon except for the CTP template
 - A test has been added, which can be found in /tests
 
 
+
  == Notes:  ==
 
     - I spent some time understanding the PokéAPI and especially the Pokemons world. I had no previous knowledge of it. Probably too much.
     - I assumed "attacks" (2 h) to be "moves", but could not find a "description" field, so I used "type"->"name". There is no field called "description".
     - Initially, I used ACF, including it in the theme plugins. I discarded this option as the native WordPress custom fields were enough. And the project is more simple like this. 
+
 
 
 
@@ -73,6 +77,7 @@ Everything has been added in poketheme/inc/pokemon except for the CTP template
     - Check the custom fields are enabled on your site. Go to Pokemon post, ..., preferences, panels, Custom Fields.
     
 ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/custom-fields.png)
+
 
 
 == Screenshots ==
@@ -87,9 +92,11 @@ Everything has been added in poketheme/inc/pokemon except for the CTP template
  ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/pokemon-post-editor.png)
 
 
+
 == Changelog ==
 
 = 1.0 = first launch
+
 
 == Next ==
 
