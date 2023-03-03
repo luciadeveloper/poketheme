@@ -1,4 +1,5 @@
 <?php
+
 require_once(__DIR__.'/postype-pokemon.php');
 
 // Define path and URL to the ACF plugin.
@@ -27,5 +28,5 @@ add_action( 'wp_enqueue_scripts', 'wpdocs_theme_name_scripts' );
  * Instantiate class, creating post type Pokemon
  */
 
- global $pokemon;
- $pokemon = new Pokemon();
+global $pokemon;
+$pokemon = new Pokemon\Pokemon();

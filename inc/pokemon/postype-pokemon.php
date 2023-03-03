@@ -5,6 +5,7 @@
  * @package Understrap
  */
 
+namespace Pokemon;
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
@@ -106,14 +107,14 @@ class Pokemon {
             $rand         = rand( 0, $count );
             $pokemon_data =  $this->pokemon_data( $this->api_endpoint.$rand );
      
-            if( !is_null( $pokemon_data ) ) {
+            if( ! is_null( $pokemon_data ) ) {
 
                 $this->create_one_pokemon( $pokemon_data );
               
             } 
             //if there was no pokemon retreived from the API, give it another try
             else { 
-                $i--;
+                --$i;
             }
             
         }
@@ -154,7 +155,10 @@ class Pokemon {
         // Insert the post into the database
         $postId = wp_insert_post( $my_post );
        
-        add_post_meta( $postId, 'pokemon_id', $pokemon_id, true );
+        add_post_meta( 
+            $postId, 
+            'pokemon_id', 
+            $pokemon_id, true );
         add_post_meta( $postId, 'description', '', true );
         add_post_meta( $postId, 'primary_type', $primary_type, true );
         add_post_meta( $postId, 'secondary_type', $secondary_type, true );
