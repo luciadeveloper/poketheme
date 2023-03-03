@@ -36,7 +36,7 @@ class Pokemon {
        
         // create initial pokemons when the theme is enabled
         add_action( 'after_switch_theme', array( $this, 'create_pokemons' ) );
-        $this->create_pokemons(1);  
+        //$this->create_pokemons(10);  
         
         //ajax endpoints
         add_action( 'wp_ajax_pokemon_data', array( $this,'pokemon_data' ) );
@@ -48,7 +48,7 @@ class Pokemon {
 
         //REST API endpoints
         add_action( 'rest_api_init',  array( $this,'register_url_get_pokemon' ));
-        add_action( 'rest_api_init',  array( $this,'register_url_show_pokemon' ));
+        add_action( 'rest_api_init',  array( $this,'register_fields_show_pokemon' ));
         add_action( 'rest_api_init',  array( $this,'register_url_add_pokemon' ));
         add_action( 'rest_api_init',  array( $this,'register_url_list_pokemons_by_pokedex' ));
        
@@ -76,15 +76,15 @@ class Pokemon {
 
         $args = array(
             'labels'                => $labels,
-            'public'                => true, // the CPT will not have a page on the front-end
-            'publicly_queryable'    => true, // the content of the pokemon will not be found on search
-            'show_ui'               => true, // pokemons are not editable.
-            'show_in_menu'          => true, //the CPT will not have its own page on the admin
+            'public'                => true, // the CPT will have a page on the front-end
+            'publicly_queryable'    => true, // the content of the pokemon will be found on search
+            'show_ui'               => true, // pokemons are editable.
+            'show_in_menu'          => true, // the CPT will have its own page on the admin
             'query_var'             => true,
             'rewrite'               => array( 'slug' => $this->slug ),
             'capability_type'       => 'post',
-            'has_archive'           => true,
-            'show_in_rest'           => true,
+            'has_archive'           => true, // the CPT has an archive page
+            'show_in_rest'           => true,  // the CPT will be shown in the REST API
             'hierarchical'          => false,
             'menu_position'         => 0,
             'supports'              => array( 'title', 'editor', 'thumbnail', 'custom-fields'),
@@ -94,7 +94,7 @@ class Pokemon {
     }
     
 
-     /**
+    /**
      * Create new pokemons 
      */
     public function create_pokemons( $n = 3) {
@@ -105,15 +105,23 @@ class Pokemon {
         for ($i = 0; $i < $n; $i++) {
             
             $rand         = rand( 0, $count );
-            $pokemon_data =  $this->pokemon_data( $this->api_endpoint.$rand );
-     
-            if( ! is_null( $pokemon_data ) ) {
+            $pokemon_data =  $this->pokemon_data( $this->api_endpoint.$rand );            
 
-                $this->create_one_pokemon( $pokemon_data );
+            if( ! is_null( $pokemon_data )  ) {
+
+                //checks if a post with same name already exists
+                $post_exist = get_page_by_title(  $pokemon_data->name );
+               
+                if( ! $post_exist ) {
+                    $this->create_one_pokemon( $pokemon_data );
+                }
+
+                else { //if that Pokemon was already in the DB
+                    --$i;
+                }
               
             } 
-            //if there was no pokemon retreived from the API, give it another try
-            else { 
+            else {   //if there was no pokemon retreived from the API, give it another try
                 --$i;
             }
             
@@ -199,7 +207,7 @@ class Pokemon {
      */
     public function register_url_add_pokemon(){
         
-        register_rest_route( 'add-pokemon/', 'random/', 
+        register_rest_route( 'add-pokemon', 'random', 
             array(
                 'methods'             => 'GET',
                 'callback'            => array( $this,'add_random_pokemon' ),
@@ -216,7 +224,7 @@ class Pokemon {
      * http://poketest.local/wp-json/get-pokemon/random/ 
      */
     public function register_url_get_pokemon(){
-        register_rest_route( 'get-pokemon/', 'random/', 
+        register_rest_route( 'get-pokemon', 'random', 
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this,'get_random_pokemon' ),
@@ -235,7 +243,7 @@ class Pokemon {
      * http://poketest.local/wp-json/list-pokemons/bypokedex
      */
     public function register_url_list_pokemons_by_pokedex(){
-        register_rest_route( 'list-pokemons/', 'bypokedex/', 
+        register_rest_route( 'list-pokemons', 'bypokedex', 
             array(
                 'methods'  => 'GET',
                 'callback' => array( $this,'list_pokemons' ),
@@ -246,43 +254,8 @@ class Pokemon {
             ) );
     }
 
-    /**
-     *  list pokemosn by pokedex function
-     */
-    function list_pokemons() {
-       
-        $args = array(
-            'post_type'      => $this->type,
-            'orderby'        => 'rand',
-            'posts_per_page' => 500, 
-            'meta_key'       => 'pokedex_last_version',
-            'orderby'        => 'meta_value_num',
-            'order'          => 'DESC'
-        );
 
-        $the_query = new WP_Query( $args );
- 
-        if ( $the_query->have_posts() ) {
-           
-            while ( $the_query->have_posts() ) {
-              
-                $the_query->the_post();
-
-                the_title();
-
-                echo "->";
-                echo get_post_meta( get_the_ID() , 'pokedex_last_version', true );
-                echo "  ";
-            }
-
-        } else {
-            echo "no posts";
-        }
-
-    }
-
-    
-    /**
+     /**
      * add one pokemon to DB
      */
     function add_random_pokemon() {
@@ -303,7 +276,7 @@ class Pokemon {
             'posts_per_page' => 1, 
         );
 
-        $the_query = new WP_Query( $args );
+        $the_query = new \WP_Query( $args );
  
         if ( $the_query->have_posts() ) {
          
@@ -318,6 +291,40 @@ class Pokemon {
             echo "no posts";
         
         }
+    }
+
+    /**
+     *  list pokemosn by pokedex function
+     */
+    function list_pokemons() {
+       
+        $args = array(
+            'post_type'      => $this->type,
+            'orderby'        => 'rand',
+            'posts_per_page' => 500, //to show them all is typically used -1 but this could create performance issues. So I decided to use a high number.
+            'meta_key'       => 'pokedex_last_version',
+            'orderby'        => 'meta_value_num',
+            'order'          => 'DESC'
+        );
+
+        $the_query = new \WP_Query( $args );
+ 
+        if ( $the_query->have_posts() ) {
+           
+            while ( $the_query->have_posts() ) {
+              
+                $the_query->the_post();
+
+                the_title();
+
+                echo "->";
+                echo get_post_meta( get_the_ID() , 'pokedex_last_version', true );
+                echo "  ";
+            }
+
+        } else {
+            echo "no posts";
+        }
 
     }
 
@@ -327,7 +334,7 @@ class Pokemon {
      * * http://poketest.local/wp-json/wp/v2/pokemon/{post id}_fields=metadata
      * http://poketest.local/wp-json/wp/v2/pokemon/2226?_fields=metadata
      */
-    public function register_url_show_pokemon(){
+    public function register_fields_show_pokemon(){
         
         register_rest_field( 'pokemon', 'metadata', 
             array(
