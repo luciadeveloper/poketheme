@@ -2,22 +2,27 @@ Based on Understrap WordPress Theme, 2021 Howard Development & Consulting, LLC
 Understrap is distributed under the terms of the GNU GPL.
 
 Requires at least: WordPress 6.1.1
+
 Tested up to: WordPress 6.1.1
+
 Requires PHP: 8
 
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
-== Description ==
-
 Contributors: luciadeveloper (Lucia Sanchez Fraile)
 
 Tags: API, REST API, Custom post type, Meta fields, Tests
 
-License: GPLv2 or later License URI: http://www.gnu.org/licenses/gpl-2.0.html
+== Description ==
 
-The functionality added to Understrap theme:
+The code added to the starter theme Understrap defines a custom post type for Pokémon called Pokemon. 
+It includes methods for creating, displaying, and managing Pokémon posts, and uses the PokeAPI to fetch data for Pokémon and add it as metadata to the posts. 
+
+This code also enables some API endpoints to add or get Pokemons and to retreive the post information stored in the metadata fields in the DB. 
+
+
+ == The functionality added to Understrap theme: ==
 
 Everything has been added in poketheme/inc/pokemon except for the CTP template
 
@@ -31,12 +36,13 @@ Everything has been added in poketheme/inc/pokemon except for the CTP template
     - (8) /wp-json/list-pokemons/bypokedex: shows a list of pokemons from the DB, (name and pokedex number) and sorts them by pokedex number. 
 
 - (8) To consult the data of a pokemon post, is not necessary to create a new endpoint. The metadata created for the post is enabled to be displayed in the REST API, so we can make a simple call indicating the data field we need.
+
         - http://domain.com/wp-json/wp/v2/pokemon/{post id}}?_fields=metadata.weight,metadata.name,metadata.description //specific fields
+
         - http://domain.com/wp-json/wp/v2/pokemon/{post id}]?_fields=metadata //all fields
 
         example: http://poketest.local/wp-json/wp/v2/pokemon/2226?_fields=metadata
 
-- A test has been added, which can be found in /tests
 
 - (9) There is some level of abstraction so changing the API to retrieve the Pokemon data could be done with some work. 
     -  The creation of the Custom post type is abstract. 
@@ -49,7 +55,10 @@ Everything has been added in poketheme/inc/pokemon except for the CTP template
     - Retrieving the Attacks of a Pokemon in the PokeApi is a heavy task. I would consider if is necessary. I could develop somehting so it is only called when really needed.
 
 
-Notes: 
+- A test has been added, which can be found in /tests
+
+
+ == Notes:  ==
 
     - I spent some time understanding the PokéAPI and especially the Pokemons world. I had no previous knowledge of it. Probably too much.
     - I assumed "attacks" (2 h) to be "moves", but could not find a "description" field, so I used "type"->"name". There is no field called "description".
