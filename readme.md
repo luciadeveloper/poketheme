@@ -63,7 +63,7 @@ Notes:
     - Activate it in the dashboard or use WP-CLI. 
     - Check the custom fields are enabled on your site. Go to Pokemon post, ..., preferences, panels, Custom Fields.
     
-    ![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/custom-fields.png)
+![Screenshot](https://luciadeveloper.com/wp-content/uploads/sites/8/2023/03/custom-fields.png)
 
 
 == Screenshots ==
