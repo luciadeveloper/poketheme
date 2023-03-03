@@ -27,7 +27,7 @@ $pokemon_id           = get_post_meta( get_the_ID(), 'pokemon_id', true );
 		
 	</header><!-- .entry-header -->
 	
-	<?php echo get_the_post_thumbnail( $post->ID, 'large' ); ?>
+	<?php echo get_the_post_thumbnail( $post->ID, 'medium' ); ?>
 
 	<div class="entry-content">
 
